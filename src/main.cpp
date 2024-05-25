@@ -12,7 +12,10 @@ int main() {
     
     LogFile PacLog(PACMAN_LOG_FILE);
 
-    log_to_file("log.log", PacLog);
+    std::string updates_log = getEnvVar("PACLOGGER_UPDATES_LOG");
+    updates_log = (updates_log == "") ? "pacman.updates.log" : updates_log;
+
+    log_to_file(updates_log, PacLog);
 
     return 0;
 }

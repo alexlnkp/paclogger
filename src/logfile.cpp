@@ -77,6 +77,7 @@ std::string getEnvVar(std::string const &key) {
     return val == NULL ? std::string("") : std::string(val);
 }
 
+// Logs all updates and downgrades to file in the order they were installed
 void log_to_file(std::string path, LogFile &PacLog) {
     std::ofstream file(path, std::ios::app);
 
