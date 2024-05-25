@@ -12,11 +12,7 @@ int main() {
     
     LogFile PacLog(PACMAN_LOG_FILE);
 
-    std::vector<std::string> matches = match_for_current_date(PacLog, "upgraded");
-
-    for (std::string& match : matches) {
-        printf("%s\n", match.c_str());
-    }
+    log_to_file("log.log", PacLog);
 
     return 0;
 }
