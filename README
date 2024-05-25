@@ -1,0 +1,56 @@
+PacLogger
+
+A Pacman hook that logs all of the updates and downgrades every day.
+
+
+
+############## Getting started ##############
+1. Clone the repository
+2. Enter the cloned repository
+3. To just build: use `./autobuild` or `cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release`
+4. To build and install: use `./autobuild -i` or `cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build`
+#############################################
+
+
+
+################## How-to ###################
+1. Add `export PACLOGGER_UPDATES_LOG=/your/desired/path/to/log.log` to your ~/.bashrc file
+2. ???
+3. Profit!
+#############################################
+
+
+
+################### Logs ####################
+Log files are saved under the environmental variable `PACLOGGER_UPDATES_LOG`
+E.g. `PACLOGGER_UPDATES_LOG=/tmp/paclogger.log`
+
+The new logs are appended to the end of the existing log file, if the file doesn't exist, it will be created.
+NOTE: the PacLogger will NOT clean the log files itself.
+However, the functionality to remove logs that are `older than...` is planned.
+
+The log files are saved in format this format:
+#############################################
+
+╌╌╌╌╌╌2024-05-24╌╌╌╌╌╌
+
+┌Upgraded:
+├────sqlite (3.45.3-1 -> 3.46.0-1)
+├────linux (6.8.9.arch1-2 -> 6.9.1.arch1-2)
+├────linux-headers (6.8.9.arch1-2 -> 6.9.1.arch1-2)
+└────lib32-sqlite (3.45.3-1 -> 3.46.0-1)
+
+┌Downgraded:
+├────linux (6.9.1.arch1-2 -> 6.8.9.arch1-2)
+└────linux-headers (6.9.1.arch1-2 -> 6.8.9.arch1-2)
+
+╌╌╌╌╌╌2024-05-25╌╌╌╌╌╌
+
+┌Upgraded:
+├────linux (6.8.9.arch1-2 -> 6.9.1.arch1-2)
+└────linux-headers (6.8.9.arch1-2 -> 6.9.1.arch1-2)
+
+┌Downgraded:
+├────linux (6.9.1.arch1-2 -> 6.8.9.arch1-2)
+└────linux-headers (6.9.1.arch1-2 -> 6.8.9.arch1-2)
+#############################################
