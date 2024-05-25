@@ -14,9 +14,10 @@ A Pacman hook that logs all of the updates and downgrades every day.
 
 
 ################## How-to ###################
-1. Add `export PACLOGGER_UPDATES_LOG=/your/desired/path/to/log.log` to your ~/.bashrc file
-2. ???
-3. Profit!
+1. Change `set(PACLOGGER_UPDATES_LOG "/home/alex/.cache/paclogger.log")` line in CMakeLists.txt to the desired location of your log file
+2. Build and install
+3. ???
+4. Profit!
 #############################################
 
 

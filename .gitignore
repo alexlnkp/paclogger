@@ -34,6 +34,7 @@
 *.bak
 *.log
 
+src/env.h
 .trunk
 .vscode
 build

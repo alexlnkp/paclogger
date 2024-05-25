@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "logfile.h"
+#include "env.h"
 
 #define PACMAN_LOG_FILE "/var/log/pacman.log"
 
@@ -12,8 +13,7 @@ int main() {
     
     LogFile PacLog(PACMAN_LOG_FILE);
 
-    std::string updates_log = getEnvVar("PACLOGGER_UPDATES_LOG");
-    updates_log = (updates_log == "") ? "pacman.updates.log" : updates_log;
+    std::string updates_log = PL_ENV;
 
     log_to_file(updates_log, PacLog);
 

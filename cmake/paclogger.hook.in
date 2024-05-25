@@ -6,4 +6,4 @@ Target = *
 [Action]
 Description = @PROJECT_DESCRIPTION@
 When = PostTransaction
-Exec = env PACLOGGER_UPDATES_LOG=$PACLOGGER_UPDATES_LOG @BINARY_OUTPUT_DIR@
+Exec = @BINARY_OUTPUT_DIR@

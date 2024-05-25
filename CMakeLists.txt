@@ -4,47 +4,62 @@ cmake_minimum_required(VERSION 3.29)
 set(PROJECT_DESCRIPTION "Pacman package logger")
 set(DESTINATION_PREFIX bin)
 
-project(paclogger LANGUAGES CXX VERSION 1.0.0 DESCRIPTION ${PROJECT_DESCRIPTION})
+# CONFIG
+set(PACLOGGER_UPDATES_LOG "/home/alex/.cache/paclogger.log")
+
+project(
+  paclogger
+  LANGUAGES CXX
+  VERSION 1.1.0
+  DESCRIPTION ${PROJECT_DESCRIPTION})
 set(CMAKE_CXX_STANDARD 20)
 
 # COMPILER FLAGS
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -std=c++${CMAKE_CXX_STANDARD}")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic")
 
 # COMPILER FLAGS DEPENDANT ON BUILD TYPE
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
 else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -s -fno-ident -fno-asynchronous-unwind-tables -ffunction-sections -DNDEBUG")
-	set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections")
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} -O3 -flto -fno-gcse -fno-ident -fno-asynchronous-unwind-tables -ffunction-sections"
+  )
+  set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections")
 endif()
 
 # RECURSIVE FILE GLOBBING
 file(GLOB_RECURSE sources src/*.cpp src/*.h)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/env.h.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/src/env.h @ONLY)
+
 # TARGET CREATION
 add_executable(${PROJECT_NAME} ${sources})
 
 # MOVE EXECUTABLE TO OUTPUT FOLDER
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ln -sf ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/out/${PROJECT_NAME}
-	COMMENT "Symlinking executable to output folder"
-)
+add_custom_command(
+  TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND ln -sf ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
+          ${CMAKE_SOURCE_DIR}/out/${PROJECT_NAME}
+  COMMENT "Symlinking executable to output folder")
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND strip -x -X -s -R .gnu.version -R .gnu.version_r. ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
-	COMMENT "Stripping executable"
-)
+add_custom_command(
+  TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND strip -x -X -s -R .gnu.version -R .gnu.version_r.
+          ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
+  COMMENT "Stripping executable")
 
-set(BINARY_OUTPUT_DIR "${CMAKE_INSTALL_PREFIX}/${DESTINATION_PREFIX}/${PROJECT_NAME}")
+set(BINARY_OUTPUT_DIR
+    "${CMAKE_INSTALL_PREFIX}/${DESTINATION_PREFIX}/${PROJECT_NAME}")
 
-configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/paclogger.hook.in
-	${CMAKE_CURRENT_BINARY_DIR}/paclogger.hook
-	@ONLY
-)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paclogger.hook.in
+               ${CMAKE_CURRENT_BINARY_DIR}/paclogger.hook @ONLY)
 
 # INSTALLATION TO THE USER BIN FOLDER
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DESTINATION_PREFIX})
 
 # INSTALLING THE HOOK
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paclogger.hook DESTINATION /usr/share/libalpm/hooks/)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/paclogger.hook
+        DESTINATION /usr/share/libalpm/hooks/)
