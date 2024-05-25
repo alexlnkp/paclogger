@@ -1,10 +1,9 @@
 [Trigger]
 Operation = Upgrade
-Operation = Downgrade
 Type = Package
 Target = *
 
 [Action]
 Description = @PROJECT_DESCRIPTION@
 When = PostTransaction
-Exec = @BINARY_OUTPUT_DIR@
+Exec = env PACLOGGER_UPDATES_LOG=$PACLOGGER_UPDATES_LOG @BINARY_OUTPUT_DIR@
