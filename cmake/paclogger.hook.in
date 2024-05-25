@@ -7,4 +7,4 @@ Target = *
 [Action]
 Description = @PROJECT_DESCRIPTION@
 When = PostTransaction
-Exec = @BINARY_OUTPUT_DIR@ '%n'
+Exec = @BINARY_OUTPUT_DIR@

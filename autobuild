@@ -6,15 +6,13 @@ cmake --build build --config Release
 
 # compressing binary
 if command -p which upx; then
-    echo "UPX found, proceeding to compress the binary..."
-    upx --overlay=strip --best --compress-icons=3 --no-reloc --all-methods --all-filters --no-lzma build/paclogger
-    exit 0
+	echo "UPX found, proceeding to compress the binary..."
+	upx --overlay=strip --best --compress-icons=3 --no-reloc --all-methods --all-filters --no-lzma build/paclogger
 else
-    echo "UPX not found. Exiting..."
-    exit 0
+	echo "UPX not found."
 fi
 
 # if user passes -i flag, install
-if [[ "$1" == "-i" ]]; then
-    cmake --install build
+if [[ $1 == "-i" ]]; then
+	cmake --install build
 fi
