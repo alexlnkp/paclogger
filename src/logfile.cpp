@@ -1,7 +1,10 @@
-#include <vector>
-#include <string>
-#include <sstream>
+#include <cstring>
+#include <filesystem>
 #include <fstream>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "logfile.h"
 
@@ -29,13 +32,13 @@ std::vector<std::string> match_for_current_date(LogFile &PacLog, std::string mat
     return _match_current_date(matches);
 }
 
-std::vector<std::string> prettify(std::vector<std::string> _grades, const std::string_view &meta) {
+std::vector<std::string> prettify(std::vector<std::string> _grades, const char* meta) {
     std::vector<std::string> result;
 
     for (std::string& _grade : _grades) {
         size_t pos = _grade.find(meta);
         if (pos != std::string::npos) {
-            _grade.erase(0, pos + meta.length() + 1);
+            _grade.erase(0, pos + strlen(meta) + 1);
         }
         result.push_back(_grade);
     }
@@ -45,8 +48,6 @@ std::vector<std::string> prettify(std::vector<std::string> _grades, const std::s
 LogFile::LogFile(std::string path) {
     this->path = path;
     this->content = "";
-
-    // read the file and write its content to content
     read();
 }
 
@@ -59,7 +60,7 @@ std::string LogFile::read() {
     return content;
 }
 
-std::vector<std::string> LogFile::grep(std::string& match) {
+std::vector<std::string> LogFile::grep(std::string &match) {
     std::vector<std::string> matches;
     std::istringstream contentStream(content);
     std::string cur_line;
@@ -72,50 +73,74 @@ std::vector<std::string> LogFile::grep(std::string& match) {
     return matches;
 }
 
-std::string getEnvVar(std::string const &key) {
-    char * val = getenv( key.c_str() );
-    return val == NULL ? std::string("") : std::string(val);
+void write_updates(std::ofstream &file, const std::string &title, const std::vector<std::string> &updates) {
+    if (updates.empty()) return;
+
+    std::set<std::string> unique_updates(updates.begin(), updates.end());
+    std::vector<std::string> unique_updates_vector(unique_updates.begin(), unique_updates.end());
+
+    file << "┌" << title << ":\n";
+    for (size_t i = 0; i < unique_updates_vector.size(); ++i) {
+        file << (i == unique_updates_vector.size() - 1 ? "└────" : "├────") << unique_updates_vector[i] << "\n";
+    }
+}
+
+// Checks if file at `path` exists
+void ensure_file_exists(const std::filesystem::path &path) {
+    if (!std::filesystem::exists(path)) {
+        std::ofstream create_file(path);
+        create_file.close();
+    }
 }
 
 // Logs all updates and downgrades to file in the order they were installed
 void log_to_file(std::string path, LogFile &PacLog) {
-    std::ofstream file(path, std::ios::app);
+    std::ofstream file;
 
-    file << '\n' << "╌╌╌╌╌╌" << get_date() << "╌╌╌╌╌╌" << '\n' << '\n';
+    std::string current_date = get_date();
+    std::string date_line = "\n╌╌╌╌╌╌" + current_date + "╌╌╌╌╌╌\n";
 
+    ensure_file_exists(path);
+
+    std::ifstream read_file(path);
+    if (!read_file.is_open()) {
+        throw std::runtime_error("Failed to open file for reading " + path);
+    }
+
+    std::string content((std::istreambuf_iterator<char>(read_file)),
+                         std::istreambuf_iterator<char>());
+    read_file.close();
+
+    size_t pos = content.find(date_line);
+    if (pos != std::string::npos) {
+        // Erase from the current date line to the end of the file
+        content.erase(pos);
+
+        // Open the file for writing and truncate it
+        std::ofstream write_file(path, std::ios::trunc);
+        if (!write_file.is_open()) {
+            throw std::runtime_error("Failed to open file for writing " + path);
+        }
+
+        write_file << content;
+        write_file.close();
+    }
+
+    file.open(path, std::ios_base::app);
+    
+    file << date_line << '\n';
+    
     std::vector<std::string> upgrades = prettify(
-        match_for_current_date(
-            PacLog,
-            std::string{ug_meta}
-        ),
-        ug_meta
+        match_for_current_date(PacLog, ug_meta), ug_meta
     );
 
     std::vector<std::string> downgrades = prettify(
-        match_for_current_date(
-            PacLog,
-            std::string{dg_meta}
-        ),
-        dg_meta
+        match_for_current_date(PacLog, dg_meta), dg_meta
     );
 
-    file << "┌Upgraded:\n";
-    for (size_t i = 0; i < upgrades.size(); i++) {
-        if (i == upgrades.size() - 1) {
-            file << "└────" << upgrades[i] << "\n";
-            break;
-        }
-        file << "├────" << upgrades[i] << "\n";
-    }
-
-    file << "\n┌Downgraded:\n";
-    for (size_t i = 0; i < downgrades.size(); i++) {
-        if (i == downgrades.size() - 1) {
-            file << "└────" << downgrades[i] << "\n";
-            break;
-        }
-        file << "├────" << downgrades[i] << "\n";
-    }
+    write_updates(file, "Upgraded", upgrades);
+    file << "\n";
+    write_updates(file, "Downgraded", downgrades);
 
     file.close();
 }

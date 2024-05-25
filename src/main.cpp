@@ -13,9 +13,7 @@ int main() {
     
     LogFile PacLog(PACMAN_LOG_FILE);
 
-    std::string updates_log = PL_ENV;
-
-    log_to_file(updates_log, PacLog);
+    log_to_file(PL_ENV, PacLog);
 
     return 0;
 }

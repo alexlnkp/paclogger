@@ -10,7 +10,7 @@ set(PACLOGGER_UPDATES_LOG "/home/alex/.cache/paclogger.log")
 project(
   paclogger
   LANGUAGES CXX
-  VERSION 1.1.0
+  VERSION 1.2.0
   DESCRIPTION ${PROJECT_DESCRIPTION})
 set(CMAKE_CXX_STANDARD 20)
 

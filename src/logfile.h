@@ -1,8 +1,8 @@
 #ifndef LOGFILE_H
 #define LOGFILE_H
 
-constexpr std::string_view dg_meta = "downgraded";
-constexpr std::string_view ug_meta = "upgraded";
+constexpr const char* dg_meta = "downgraded";
+constexpr const char* ug_meta = "upgraded";
 
 struct LogFile {
     std::string path;
@@ -23,9 +23,8 @@ std::string get_date();
 std::vector<std::string> _match_current_date(std::vector<std::string>& matches);
 std::vector<std::string> match_for_current_date(LogFile &PacLog, std::string match);
 
-std::vector<std::string> prettify(std::vector<std::string> _grades, const std::string_view &meta);
+std::vector<std::string> prettify(std::vector<std::string> _grades, const char* meta);
 
-std::string getEnvVar(std::string const &key);
 void log_to_file(std::string path, LogFile &PacLog);
 
 #endif
