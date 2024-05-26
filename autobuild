@@ -1,7 +1,5 @@
 #!/bin/bash
 
-rm src/env.h
-
 # just build
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -O3 -flto -fno-gcse -fno-ident -fno-asynchronous-unwind-tables -ffunction-sections -Wl,--gc-sections"
 cmake --build build --config Release

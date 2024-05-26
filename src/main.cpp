@@ -4,7 +4,10 @@
 #include <fstream>
 
 #include "logfile.h"
-#include "env.h"
+
+#ifndef PL_ENV
+#   define PL_ENV "paclogger.log"
+#endif
 
 #define PACMAN_LOG_FILE "/var/log/pacman.log"
 

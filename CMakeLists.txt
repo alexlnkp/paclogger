@@ -21,11 +21,10 @@ set(CMAKE_CXX_STANDARD 20)
 # RECURSIVE FILE GLOBBING
 file(GLOB_RECURSE sources src/*.cpp src/*.h)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/env.h.in
-               ${CMAKE_CURRENT_SOURCE_DIR}/src/env.h @ONLY)
-
 # TARGET CREATION
 add_executable(${PROJECT_NAME} ${sources})
+target_compile_definitions(${PROJECT_NAME}
+                           PRIVATE PL_ENV="${PACLOGGER_UPDATES_LOG}")
 
 # MOVE EXECUTABLE TO OUTPUT FOLDER
 add_custom_command(
