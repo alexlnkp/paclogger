@@ -5,12 +5,16 @@ set(PROJECT_DESCRIPTION "Pacman package logger")
 set(DESTINATION_PREFIX bin)
 
 # CONFIG
-set(PACLOGGER_UPDATES_LOG "/home/alex/.cache/paclogger.log")
+
+# CHECK IF PACLOGGER_UPDATES_LOG IS EMPTY
+if(NOT PACLOGGER_UPDATES_LOG)
+  set(PACLOGGER_UPDATES_LOG "$ENV{HOME}/.cache/paclogger.log")
+endif()
 
 project(
   paclogger
   LANGUAGES CXX
-  VERSION 1.2.1
+  VERSION 1.2.2
   DESCRIPTION ${PROJECT_DESCRIPTION})
 set(CMAKE_CXX_STANDARD 20)
 

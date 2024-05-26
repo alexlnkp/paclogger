@@ -14,8 +14,8 @@ A Pacman hook that logs all of the updates and downgrades every day.
 
 
 ################## How-to ###################
-1. Change `set(PACLOGGER_UPDATES_LOG "/home/alex/.cache/paclogger.log")` line in CMakeLists.txt to the desired location of your log file
-2. Build and install
+1. Build. Use `-DPACLOGGER_UPDATES_LOG=/your/path/paclogger.log` if you wish to change the log location.
+2. Install
 3. ???
 4. Profit!
 #############################################
@@ -23,8 +23,7 @@ A Pacman hook that logs all of the updates and downgrades every day.
 
 
 ################### Logs ####################
-Log files are saved under the environmental variable `PACLOGGER_UPDATES_LOG`
-E.g. `PACLOGGER_UPDATES_LOG=/tmp/paclogger.log`
+Default log location is `$ENV{HOME}/.cache/paclogger.log`. To change that, refer to "How-to".
 
 The new logs are appended to the end of the existing log file, if the file doesn't exist, it will be created.
 NOTE: the PacLogger will NOT clean the log files itself.
@@ -51,7 +50,4 @@ The log files are saved in format this format:
 ├────linux (6.8.9.arch1-2 -> 6.9.1.arch1-2)
 └────linux-headers (6.8.9.arch1-2 -> 6.9.1.arch1-2)
 
-┌Downgraded:
-├────linux (6.9.1.arch1-2 -> 6.8.9.arch1-2)
-└────linux-headers (6.9.1.arch1-2 -> 6.8.9.arch1-2)
 #############################################
