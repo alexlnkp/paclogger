@@ -4,6 +4,14 @@ A Pacman hook that logs all of the updates and downgrades every day.
 
 
 
+################ Preparation ################
+1a. Build and install `hanickadot/compile-time-regular-expressions`
+1b. Use PKGBUILD: https://aur.archlinux.org/ctre.git
+1c. Use AUR-helper [`yay -S ctre` || `paru -S ctre`]
+#############################################
+
+
+
 ############## Getting started ##############
 1. Clone the repository
 2. Enter the cloned repository
