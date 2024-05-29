@@ -1,12 +1,17 @@
 #include <cstring>
+#include <ctll.hpp>
+#include <ctre.hpp>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "logfile.h"
+
+static constexpr auto package_pattern = ctll::fixed_string{ R"((\S+) \(([\d.]+-\d+) -> ([\d.]+-\d+)\))" };
 
 // Function that gets current date in "%Y-%m-%d" format
 std::string get_date() {
@@ -17,19 +22,19 @@ std::string get_date() {
     return buffer;
 }
 
-std::vector<std::string> _match_current_date(std::vector<std::string>& matches) {
+std::vector<std::string> _match_current_date(std::vector<std::string> &matches, std::string &date) {
     std::vector<std::string> new_matches;
     for (std::string& match : matches) {
-        if (match.find(get_date()) != std::string::npos) {
+        if (match.find(date) != std::string::npos) {
             new_matches.push_back(match);
         }
     }
     return new_matches;
 }
 
-std::vector<std::string> match_for_current_date(LogFile &PacLog, std::string match) {
+std::vector<std::string> match_for_current_date(LogFile &PacLog, std::string match, std::string &date) {
     std::vector<std::string> matches = PacLog.grep(match);
-    return _match_current_date(matches);
+    return _match_current_date(matches, date);
 }
 
 std::vector<std::string> prettify(std::vector<std::string> _grades, const char* meta) {
@@ -71,6 +76,59 @@ std::vector<std::string> LogFile::grep(std::string &match) {
         }
     }
     return matches;
+}
+
+// Function to parse a package string and return a tuple (package name, old version, new version)
+std::tuple<std::string, std::string, std::string> parse_package_string(const std::string& package) {
+    // Using CTRE regular expression
+    if (auto [whole, pkg_name, old_ver, new_ver] = ctre::match<package_pattern>(package); whole) {
+        return std::make_tuple(pkg_name.to_string(), old_ver.to_string(), new_ver.to_string());
+    }
+    return std::make_tuple(std::string(), std::string(), std::string());
+}
+
+std::pair<std::vector<std::string>, std::vector<std::string>> filter_common_entries(
+    const std::vector<std::string>& upgrades, const std::vector<std::string>& downgrades) {
+
+    // Create maps for quick lookup by package name and version.
+    std::map<std::string, std::pair<std::string, std::string>> upgrades_map;
+    std::map<std::string, std::pair<std::string, std::string>> downgrades_map;
+
+    for (const auto& u : upgrades) {
+        auto [name, old_version, new_version] = parse_package_string(u);
+        upgrades_map[name] = {old_version, new_version};
+    }
+
+    for (const auto& d : downgrades) {
+        auto [name, old_version, new_version] = parse_package_string(d);
+        downgrades_map[name] = {old_version, new_version};
+    }
+
+    // Containers for filtered results.
+    std::vector<std::string> filtered_upgrades;
+    std::vector<std::string> filtered_downgrades;
+
+    // Filter upgrades
+    for (const auto& u : upgrades) {
+        auto [name, old_version, new_version] = parse_package_string(u);
+        if (downgrades_map.find(name) == downgrades_map.end() ||
+            downgrades_map[name].first != new_version ||
+            downgrades_map[name].second != old_version) {
+            filtered_upgrades.push_back(u);
+        }
+    }
+
+    // Filter downgrades
+    for (const auto& d : downgrades) {
+        auto [name, old_version, new_version] = parse_package_string(d);
+        if (upgrades_map.find(name) == upgrades_map.end() ||
+            upgrades_map[name].first != new_version ||
+            upgrades_map[name].second != old_version) {
+            filtered_downgrades.push_back(d);
+        }
+    }
+
+    return {filtered_upgrades, filtered_downgrades};
 }
 
 void write_updates(std::ofstream &file, const std::string &title, const std::vector<std::string> &updates) {
@@ -131,16 +189,18 @@ void log_to_file(std::string path, LogFile &PacLog) {
     file << date_line << '\n';
     
     std::vector<std::string> upgrades = prettify(
-        match_for_current_date(PacLog, ug_meta), ug_meta
+        match_for_current_date(PacLog, ug_meta, current_date), ug_meta
     );
 
     std::vector<std::string> downgrades = prettify(
-        match_for_current_date(PacLog, dg_meta), dg_meta
+        match_for_current_date(PacLog, dg_meta, current_date), dg_meta
     );
 
-    write_updates(file, "Upgraded", upgrades);
+    auto [filtered_upgrades, filtered_downgrades] = filter_common_entries(upgrades, downgrades);
+
+    write_updates(file, "Upgraded", filtered_upgrades);
     file << "\n";
-    write_updates(file, "Downgraded", downgrades);
+    write_updates(file, "Downgraded", filtered_downgrades);
 
     file.close();
 }
