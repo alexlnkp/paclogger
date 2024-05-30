@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "logfile.h"
 
@@ -90,41 +91,43 @@ std::tuple<std::string, std::string, std::string> parse_package_string(const std
 std::pair<std::vector<std::string>, std::vector<std::string>> filter_common_entries(
     const std::vector<std::string>& upgrades, const std::vector<std::string>& downgrades) {
 
-    // Create maps for quick lookup by package name and version.
-    std::map<std::string, std::pair<std::string, std::string>> upgrades_map;
-    std::map<std::string, std::pair<std::string, std::string>> downgrades_map;
+    // Map to store the latest action for each package
+    std::unordered_map<std::string, std::string> latest_actions;
 
-    for (const auto& u : upgrades) {
-        auto [name, old_version, new_version] = parse_package_string(u);
-        upgrades_map[name] = {old_version, new_version};
+    // Process upgrades
+    for (const auto& upgrade : upgrades) {
+        auto [name, _, __] = parse_package_string(upgrade);
+        latest_actions[name] = "upgrade";
     }
 
-    for (const auto& d : downgrades) {
-        auto [name, old_version, new_version] = parse_package_string(d);
-        downgrades_map[name] = {old_version, new_version};
+    // Process downgrades
+    for (const auto& downgrade : downgrades) {
+        auto [name, _, __] = parse_package_string(downgrade);
+        latest_actions[name] = "downgrade";
     }
 
-    // Containers for filtered results.
+    // Vectors to store the filtered upgrades and downgrades
     std::vector<std::string> filtered_upgrades;
     std::vector<std::string> filtered_downgrades;
 
-    // Filter upgrades
-    for (const auto& u : upgrades) {
-        auto [name, old_version, new_version] = parse_package_string(u);
-        if (downgrades_map.find(name) == downgrades_map.end() ||
-            downgrades_map[name].first != new_version ||
-            downgrades_map[name].second != old_version) {
-            filtered_upgrades.push_back(u);
-        }
-    }
-
-    // Filter downgrades
-    for (const auto& d : downgrades) {
-        auto [name, old_version, new_version] = parse_package_string(d);
-        if (upgrades_map.find(name) == upgrades_map.end() ||
-            upgrades_map[name].first != new_version ||
-            upgrades_map[name].second != old_version) {
-            filtered_downgrades.push_back(d);
+    // Populate the filtered lists based on the latest action for each package
+    for (const auto& [name, action] : latest_actions) {
+        if (action == "upgrade") {
+            // If the latest action is an upgrade, find the upgrade entry
+            for (auto it = upgrades.rbegin(); it != upgrades.rend(); ++it) {
+                if (it->find(name) != std::string::npos) {
+                    filtered_upgrades.push_back(*it);
+                    break;
+                }
+            }
+        } else {
+            // If the latest action is a downgrade, find the downgrade entry
+            for (auto it = downgrades.rbegin(); it != downgrades.rend(); ++it) {
+                if (it->find(name) != std::string::npos) {
+                    filtered_downgrades.push_back(*it);
+                    break;
+                }
+            }
         }
     }
 
