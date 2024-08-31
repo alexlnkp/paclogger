@@ -1,6 +1,7 @@
 PacLogger
 
 A Pacman hook that logs all of the updates and downgrades every day.
+Why? Well, because I have terrible memory and alawys forget what I upgraded. Sometimes other stuff breaks and You want to know the cause precisely.
 
 This hook is available on AUR! https://aur.archlinux.org/packages/paclogger
 You can manually clone the PKGBUILD and use `makepkg`, or you could use AUR helpers, like `yay` or `paru`.
